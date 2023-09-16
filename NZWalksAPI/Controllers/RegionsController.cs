@@ -40,7 +40,7 @@ namespace NZWalksAPI.Controllers
             return Ok(regionsDto);
         }
 
-        //get region by id
+        //Get region by id
         [HttpGet]
         [Route("{id:Guid}")]
         public IActionResult GetById([FromRoute] Guid id)
@@ -68,9 +68,9 @@ namespace NZWalksAPI.Controllers
             return Ok(regionDto);
         }
 
-        //create new region
+        //Create new region
         [HttpPost]
-        public IActionResult Create([FromBody]AddRegionRequestDto addRegionRequestDto)
+        public IActionResult Create([FromBody] AddRegionRequestDto addRegionRequestDto)
         {
             //Map or convert DTO to Domain Model
             var regionDomainModel = new Region
@@ -79,7 +79,6 @@ namespace NZWalksAPI.Controllers
                 Name = addRegionRequestDto.Name,
                 RegionImageUrl = addRegionRequestDto.RegionImageUrl
             };
-
 
             //Use domain model to create region
             dbContext.Regions.Add(regionDomainModel);
@@ -94,7 +93,39 @@ namespace NZWalksAPI.Controllers
                 RegionImageUrl = regionDomainModel.RegionImageUrl
             };
 
-            return CreatedAtAction(nameof(GetById), new {id=regionDto.Id}, regionDto);
+            return CreatedAtAction(nameof(GetById), new { id = regionDto.Id }, regionDto);
+        }
+
+        //Update region
+        [HttpPut]
+        [Route("{id:Guid}")]
+        public IActionResult Update([FromRoute] Guid id, [FromBody] UpdateRegionDto updateRegionDto)
+        {
+            //Check if region exists
+            var regionDomainModel = dbContext.Regions.FirstOrDefault(x => x.Id == id);
+
+            if (regionDomainModel == null)
+            {
+                return NotFound();
+            }
+
+            //map DTO to domain model
+            regionDomainModel.Code = updateRegionDto.Code;
+            regionDomainModel.Name = updateRegionDto.Name;
+            regionDomainModel.RegionImageUrl = updateRegionDto.RegionImageUrl;
+
+            dbContext.SaveChanges();
+
+            //convert domain model to dto
+            var regionDto = new RegionDto
+            {
+                Id = regionDomainModel.Id,
+                Code = regionDomainModel.Code,
+                Name = regionDomainModel.Name,
+                RegionImageUrl = regionDomainModel.RegionImageUrl
+            };
+            
+            return Ok(regionDto);
 
         }
     }
